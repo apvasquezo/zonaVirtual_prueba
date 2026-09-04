@@ -12,20 +12,6 @@ GO
 USE ZonaVirtualDB;
 GO
 
--- Login/usuario de conexion (ajusta la clave antes de usar en un ambiente real)
-IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'zv_user')
-BEGIN
-    CREATE LOGIN zv_user WITH PASSWORD = 'ClaveIncial+2026';
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'zv_user')
-BEGIN
-    CREATE USER zv_user FOR LOGIN zv_user;
-    ALTER ROLE db_owner ADD MEMBER zv_user;
-END
-GO
-
 IF OBJECT_ID('dbo.Comercios', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.Comercios (

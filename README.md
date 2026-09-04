@@ -1,8 +1,24 @@
 # Zona Virtual — Prueba Técnica
- 
-Plataforma de pagos con dos perfiles de usuario — **pagador** y **comercio** — construida con **.NET 8 Web API** (Entity Framework Core + SQL Server) en el backend y **Angular 17** (standalone components) en el frontend.
- 
-Desarrollado como prueba técnica para el cargo de Desarrollador Full Stack en Zona Virtual S.A.
+
+## Plataforma de pagos
+
+Aplicación web desarrollada como prueba técnica para el cargo de
+**Desarrollador Full Stack en Zona Virtual S.A.**
+
+La solución permite gestionar pagos mediante dos perfiles:
+
+- **Pagador:** consulta sus pagos y registra nuevas transacciones.
+- **Comercio:** consulta los pagos recibidos, filtra transacciones y
+  actualiza aquellas que aún no han sido aprobadas.
+
+### Tecnologías principales
+
+- **Backend:** .NET 8 / ASP.NET Core Web API
+- **ORM:** Entity Framework Core 8
+- **Base de datos:** SQL Server
+- **Frontend:** Angular 17
+- **Autenticación:** JWT Bearer
+- **Hash de contraseñas:** PBKDF2 + SHA-256
  
 ```
 zona-virtual/
@@ -38,7 +54,32 @@ zona-virtual/
 | Estilos | CSS puro por componente (sin librerías de UI externas) |
  
 ---
- 
+## Características principales
+
+### Pagador
+
+- Registro y autenticación.
+- Consulta de pagos realizados.
+- Registro de nuevas transacciones.
+- Selección del comercio destinatario.
+- Validación de código de transacción único.
+
+### Comercio
+
+- Autenticación mediante JWT.
+- Consulta de pagos recibidos.
+- Filtros por fecha, código de pago y cliente.
+- Cálculo del total de las transacciones filtradas.
+- Actualización de transacciones no aprobadas.
+
+### Seguridad
+
+- Autenticación basada en JWT.
+- Autorización por roles.
+- Contraseñas protegidas mediante PBKDF2 + salt.
+- Separación entre identidad de negocio y credenciales.
+- Protección de endpoints mediante `[Authorize]`. 
+---
 ## Arquitectura del backend
  
 El proyecto está organizado en capas, separando responsabilidades:
@@ -113,8 +154,10 @@ En `appsettings.json`, ajusta `ConnectionStrings:DefaultConnection` según tu in
  
 - **Con Windows Authentication** (recomendado para desarrollo local):
 ```json
-  "DefaultConnection": "Server=localhost;Database=ZonaVirtualDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=.\\SQLEXPRESS;Database=ZonaVirtualDB;Trusted_Connection=True;TrustServerCertificate=True;"
 ```
+En caso de utilizar una instancia diferente de SQL Server, ajustar el valor de Server según la configuración local.
+
 - **Con usuario/clave de SQL Server** (requiere modo de autenticación mixto habilitado):
 ```json
   "DefaultConnection": "Server=localhost;Database=ZonaVirtualDB;User Id=zv_user;Password=CambiaEstaClave123!;TrustServerCertificate=True;"

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ZonaVirtual.Api.Data;
 using ZonaVirtual.Api.Services;
+using ZonaVirtual.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ---- Middlewares ----
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

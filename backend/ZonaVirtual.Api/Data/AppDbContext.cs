@@ -54,7 +54,10 @@ public class AppDbContext : DbContext
         // ---- Cuenta ----
         modelBuilder.Entity<Cuenta>(e =>
         {
-            e.ToTable("Cuentas");
+            e.ToTable("Cuentas", t => t.HasCheckConstraint(
+                "CK_Cuentas_UnPerfil",
+                "([Perfil] = 1 AND [UsuarioPagadorId] IS NOT NULL AND [ComercioId] IS NULL) OR " +
+                "([Perfil] = 2 AND [ComercioId] IS NOT NULL AND [UsuarioPagadorId] IS NULL)"));
             e.HasIndex(c => new { c.Perfil, c.Username }).IsUnique();
 
             e.HasOne(c => c.UsuarioPagador)
