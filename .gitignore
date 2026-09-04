@@ -1,0 +1,37 @@
+# ============================================================
+# Backend (.NET)
+# ============================================================
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/**/appsettings.Local.json
+
+# Visual Studio
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ============================================================
+# Frontend (Angular / Node)
+# ============================================================
+frontend/**/node_modules/
+frontend/**/dist/
+frontend/**/.angular/
+frontend/**/npm-debug.log*
+frontend/**/*.tsbuildinfo
+
+# ============================================================
+# Editores / SO
+# ============================================================
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.DS_Store
+Thumbs.db
+
+# ============================================================
+# Variables de entorno / secretos (por si algún día los usas)
+# ============================================================
+*.env
+.env.local

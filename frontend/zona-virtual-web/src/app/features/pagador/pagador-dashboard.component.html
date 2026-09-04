@@ -1,0 +1,96 @@
+<div class="page">
+  <header class="topbar">
+    <div class="brand-mini">Zona Virtual</div>
+    <div class="user-box">
+      <span>{{ auth.session()?.nombre }}</span>
+      <button class="btn-text" (click)="salir()">Salir</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="form-card card">
+      <h2>Nuevo pago</h2>
+      <p class="hint">Paga a cualquier comercio registrado en Zona Virtual.</p>
+
+      <div class="field">
+        <label for="comercio">Comercio</label>
+        <select id="comercio" [(ngModel)]="comercioId">
+          <option [ngValue]="null">Selecciona un comercio</option>
+          @for (c of comercios(); track c.id) {
+            <option [ngValue]="c.id">{{ c.comercioNombre }} · NIT {{ c.comercioNit }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="codigo">Código de la transacción</label>
+        <input id="codigo" type="number" [(ngModel)]="transCodigo" placeholder="Ej. 1029384756">
+      </div>
+
+      <div class="field">
+        <label for="medio">Medio de pago</label>
+        <select id="medio" [(ngModel)]="transMedioPago">
+          <option [ngValue]="null">Selecciona un medio</option>
+          @for (m of mediosPago; track m.valor) {
+            <option [ngValue]="m.valor">{{ m.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="total">Valor</label>
+        <input id="total" type="number" min="0" step="100" [(ngModel)]="transTotal" placeholder="0">
+      </div>
+
+      <div class="field">
+        <label for="concepto">Concepto</label>
+        <input id="concepto" type="text" [(ngModel)]="transConcepto" placeholder="Ej. Pago de factura #223">
+      </div>
+
+      @if (error()) { <p class="error-text">{{ error() }}</p> }
+      @if (exito()) { <p class="success-text">{{ exito() }}</p> }
+
+      <button class="btn btn-primary full" (click)="registrarPago()">Pagar</button>
+    </section>
+
+    <section class="list-card">
+      <div class="list-header">
+        <h2>Tus pagos</h2>
+        <span class="muted">{{ pagos().length }} en total</span>
+      </div>
+
+      @if (cargando()) {
+        <p class="muted">Cargando pagos...</p>
+      } @else if (pagos().length === 0) {
+        <p class="muted">Todavía no has hecho ningún pago. Usa el formulario para registrar el primero.</p>
+      } @else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Comercio</th>
+              <th>Medio de pago</th>
+              <th>Valor</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Concepto</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of pagos(); track p.id) {
+              <tr>
+                <td>{{ p.transCodigo }}</td>
+                <td>{{ p.comercioNombre }}</td>
+                <td>{{ p.transMedioPagoNombre }}</td>
+                <td>{{ p.transTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td>{{ p.transFecha | date:'d MMM y, h:mm a' }}</td>
+                <td><span class="badge" [ngClass]="estadoClase(p.transEstado)">{{ p.transEstadoNombre }}</span></td>
+                <td>{{ p.transConcepto }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </main>
+</div>

@@ -1,0 +1,129 @@
+<div class="page">
+  <header class="topbar">
+    <div class="brand-mini">Zona Virtual · Comercio</div>
+    <div class="user-box">
+      <span>{{ auth.session()?.nombre }}</span>
+      <button class="btn-text" (click)="salir()">Salir</button>
+    </div>
+  </header>
+
+  <main class="content" style="grid-template-columns: 1fr;">
+    <section class="list-card">
+      <div class="summary-strip">
+        <div class="summary-item">
+          <span class="value">{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          <span class="label">Total recibido (según filtros)</span>
+        </div>
+        <div class="summary-item">
+          <span class="value">{{ transacciones().length }}</span>
+          <span class="label">Transacciones encontradas</span>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="field">
+          <label for="fecha">Fecha</label>
+          <input id="fecha" type="date" [(ngModel)]="filtroFecha">
+        </div>
+        <div class="field">
+          <label for="codigo">Código de pago</label>
+          <input id="codigo" type="number" [(ngModel)]="filtroCodigo" placeholder="Ej. 1029384756">
+        </div>
+        <div class="field">
+          <label for="usuario">Cliente</label>
+          <input id="usuario" type="text" [(ngModel)]="filtroUsuario" placeholder="Nombre del pagador">
+        </div>
+        <div class="field" style="justify-content: flex-end; flex-direction: row; gap: 8px;">
+          <button class="btn btn-primary" (click)="buscar()">Buscar</button>
+          <button class="btn btn-secondary" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
+      </div>
+
+      @if (cargando()) {
+        <p class="muted">Cargando transacciones...</p>
+      } @else if (transacciones().length === 0) {
+        <p class="muted">No se encontraron pagos con estos filtros.</p>
+      } @else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Cliente</th>
+              <th>Medio de pago</th>
+              <th>Valor</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Concepto</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of transacciones(); track t.id) {
+              <tr>
+                <td>{{ t.transCodigo }}</td>
+                <td>{{ t.usuarioPagadorNombre }}</td>
+                <td>{{ t.transMedioPagoNombre }}</td>
+                <td>{{ t.transTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td>{{ t.transFecha | date:'d MMM y, h:mm a' }}</td>
+                <td><span class="badge" [ngClass]="estadoClase(t.transEstado)">{{ t.transEstadoNombre }}</span></td>
+                <td>{{ t.transConcepto }}</td>
+                <td class="row-actions">
+                  @if (puedeEditar(t)) {
+                    <button class="btn btn-secondary" (click)="abrirEdicion(t)">Editar</button>
+                  } @else {
+                    <span class="muted">Aprobada</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </main>
+
+  @if (editando(); as t) {
+    <div class="modal-backdrop" (click)="cerrarEdicion()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3>Editar pago #{{ t.transCodigo }}</h3>
+
+        <div class="field">
+          <label for="editMedio">Medio de pago</label>
+          <select id="editMedio" [(ngModel)]="editMedioPago">
+            @for (m of mediosPago; track m.valor) {
+              <option [ngValue]="m.valor">{{ m.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="editEstado">Estado</label>
+          <select id="editEstado" [(ngModel)]="editEstado">
+            @for (e of estados; track e.valor) {
+              <option [ngValue]="e.valor">{{ e.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="editTotal">Valor</label>
+          <input id="editTotal" type="number" min="0" step="100" [(ngModel)]="editTotal">
+        </div>
+
+        <div class="field">
+          <label for="editConcepto">Concepto</label>
+          <input id="editConcepto" type="text" [(ngModel)]="editConcepto">
+        </div>
+
+        @if (editError()) { <p class="error-text">{{ editError() }}</p> }
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cerrarEdicion()">Cancelar</button>
+          <button class="btn btn-primary" (click)="guardarEdicion()" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
