@@ -105,7 +105,7 @@ Un controller nunca contiene lógica de negocio — solo valida el modelo, llama
 | `Comercios` | `ComercioCodigo`, `ComercioNombre`, `ComercioNit`, `ComercioDireccion` |
 | `UsuariosPagadores` | `UsuarioIdentificacion`, `UsuarioNombre`, `UsuarioEmail` |
 | `Transacciones` | `TransCodigo` (único), `TransMedioPago`, `TransEstado`, `TransTotal`, `TransFecha`, `TransConcepto` + FK a `Comercio` y a `UsuarioPagador` |
-| `Cuentas` | credenciales de acceso (`Username` + `PasswordHash`), enlazadas 1-a-1 a un pagador **o** a un comercio, nunca a ambos |
+| `Cuentas` | credenciales de acceso (`Username` corresponde al correo electrónico y `PasswordHash` almacena la contraseña protegida), enlazadas 1-a-1 a un pagador o a un comercio, nunca a ambos |
  
 **Decisión de diseño clave:** se separó la identidad de negocio (`Comercios` / `UsuariosPagadores` — lo que genera el endpoint de datos de prueba) de las credenciales de acceso (`Cuentas`). Esto permite que un registro exista en la base sin tener todavía usuario/contraseña, que es justo el escenario que describe el Punto 2 del enunciado.
  

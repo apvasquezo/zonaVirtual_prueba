@@ -63,6 +63,10 @@ public class AuthService : IAuthService
 
             if (usuario == null)
             {
+                var emailEnUso = await _db.UsuariosPagadores.AnyAsync(u => u.UsuarioEmail == request.Email);
+                if (emailEnUso)
+                    throw new InvalidOperationException("Ese correo ya está registrado con otra identificación. Usa uno distinto.");
+
                 usuario = new UsuarioPagador
                 {
                     UsuarioIdentificacion = request.Identificador,
@@ -71,7 +75,7 @@ public class AuthService : IAuthService
                 };
                 _db.UsuariosPagadores.Add(usuario);
                 await _db.SaveChangesAsync();
-            }
+}
             else if (usuario.Cuenta != null)
             {
                 throw new InvalidOperationException("Este usuario ya tiene una cuenta creada.");
