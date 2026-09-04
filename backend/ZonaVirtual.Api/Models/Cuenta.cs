@@ -11,7 +11,7 @@ public class Cuenta
     public Perfil Perfil { get; set; }
 
     [Required, MaxLength(150)]
-    public string Username { get; set; } = string.Empty; // email o nit/identificacion segun perfil
+    public string Username { get; set; } = string.Empty; // email
 
     [Required]
     public string PasswordHash { get; set; } = string.Empty;

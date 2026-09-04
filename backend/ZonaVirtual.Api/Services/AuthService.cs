@@ -102,6 +102,10 @@ public class AuthService : IAuthService
 
             if (comercio == null)
             {
+                var emailEnUso = await _db.Cuentas.AnyAsync(c => c.Perfil == Perfil.Comercio && c.Username == request.Email);
+                if (emailEnUso)
+                    throw new InvalidOperationException("Ese correo ya está registrado con otro comercio. Usa uno distinto.");
+
                 comercio = new Comercio
                 {
                     ComercioCodigo = request.Identificador,

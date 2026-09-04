@@ -18,6 +18,6 @@ public class Comercio
     [Required, MaxLength(250)]
     public string ComercioDireccion { get; set; } = string.Empty;
 
-    public ICollection<Transaccion> Transacciones { get; set; } = new List<Transaccion>();
-    public Cuenta? Cuenta { get; set; }
+    public ICollection<Transaccion> Transacciones { get; set; } = new List<Transaccion>(); // relacion 1 a muchos
+    public Cuenta? Cuenta { get; set; } //puede ser null
 }
