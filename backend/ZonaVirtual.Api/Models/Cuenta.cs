@@ -11,7 +11,7 @@ public class Cuenta
     public Perfil Perfil { get; set; }
 
     [Required, MaxLength(150)]
-    public string Username { get; set; } = string.Empty; // email
+    public string Username { get; set; } = string.Empty; // email o nit/identificacion segun perfil
 
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
@@ -29,36 +29,4 @@ public enum Perfil
 {
     Pagador = 1,
     Comercio = 2
-}
-
-public static class TransEstado
-{
-    public const int Aprobada = 1;
-    public const int Rechazada = 1000;
-    public const int Pendiente = 999;
-    public const int RechazadaSR = 1001;
-
-    public static readonly Dictionary<int, string> Nombres = new()
-    {
-        { Aprobada, "Aprobada" },
-        { Rechazada, "Rechazada" },
-        { Pendiente, "Pendiente" },
-        { RechazadaSR, "Rechazada SR" }
-    };
-}
-
-public static class TransMedioPago
-{
-    public const int TarjetaCredito = 32;
-    public const int PSE = 29;
-    public const int Gana = 41;
-    public const int Caja = 42;
-
-    public static readonly Dictionary<int, string> Nombres = new()
-    {
-        { TarjetaCredito, "Tarjeta de Crédito" },
-        { PSE, "PSE" },
-        { Gana, "Gana" },
-        { Caja, "Caja" }
-    };
 }

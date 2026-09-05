@@ -139,7 +139,7 @@ dotnet restore
  
 ### 2. Crear la base de datos
  
-**Opción A — EF Core migrations (recomendada):**
+**Opción A — EF Core migrations (recomendada)::** el repositorio no incluye migraciones pre-generadas (no hay carpeta `Migrations/`) — se generan localmente al correr este comando, a partir de las entidades y la configuración de `AppDbContext`:**
 ```bash
 dotnet tool install --global dotnet-ef   # si no lo tienes
 dotnet ef migrations add InitialCreate

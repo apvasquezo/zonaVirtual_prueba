@@ -27,15 +27,20 @@ public class DatosPruebaService : IDatosPruebaService
 
     public async Task<GenerarDatosResponse> GenerarAsync(GenerarDatosRequest request)
     {
+        // Traemos una sola vez los codigos/identificaciones que ya existen en la base
+        var codigosComercioUsados = new HashSet<string>(await _db.Comercios.Select(c => c.ComercioCodigo).ToListAsync());
+        var identificacionesUsadas = new HashSet<string>(await _db.UsuariosPagadores.Select(u => u.UsuarioIdentificacion).ToListAsync());
+        var transCodigosUsados = new HashSet<long>(await _db.Transacciones.Select(t => t.TransCodigo).ToListAsync());
+
         var comercios = new List<Comercio>();
         for (int i = 0; i < request.CantidadComercios; i++)
         {
-            var codigo = await GenerarCodigoUnicoAsync(async c => await _db.Comercios.AnyAsync(x => x.ComercioCodigo == c) || comercios.Any(x => x.ComercioCodigo == c));
+            var codigo = GenerarUnico(codigosComercioUsados, () => _rng.Next(100_000, 999_999).ToString());
             comercios.Add(new Comercio
             {
                 ComercioCodigo = codigo,
                 ComercioNombre = NombresComercio[_rng.Next(NombresComercio.Length)] + " " + _rng.Next(1, 999),
-                ComercioNit = "NIT" + _rng.Next(100000000, 999999999),
+                ComercioNit = _rng.Next(100_000_000, 999_999_999).ToString(),
                 ComercioDireccion = $"Calle {_rng.Next(1, 150)} # {_rng.Next(1, 90)}-{_rng.Next(1, 99)}"
             });
         }
@@ -44,7 +49,7 @@ public class DatosPruebaService : IDatosPruebaService
         var usuarios = new List<UsuarioPagador>();
         for (int i = 0; i < request.CantidadUsuarios; i++)
         {
-            var identificacion = await GenerarCodigoUnicoAsync(async c => await _db.UsuariosPagadores.AnyAsync(x => x.UsuarioIdentificacion == c) || usuarios.Any(x => x.UsuarioIdentificacion == c));
+            var identificacion = GenerarUnico(identificacionesUsadas, () => _rng.Next(100_000, 999_999).ToString());
             var nombre = NombresPersona[_rng.Next(NombresPersona.Length)];
             usuarios.Add(new UsuarioPagador
             {
@@ -55,30 +60,29 @@ public class DatosPruebaService : IDatosPruebaService
         }
         _db.UsuariosPagadores.AddRange(usuarios);
 
-        await _db.SaveChangesAsync(); // aseguramos Ids antes de crear transacciones
+        // Guardamos comercios y usuarios antes de crear transacciones, porque estas
+        // necesitan sus Ids reales (generados por la base) para las llaves foraneas.
+        await _db.SaveChangesAsync();
 
         var transacciones = new List<Transaccion>();
-        for (int i = 0; i < request.CantidadTransacciones; i++)
+        if (comercios.Count > 0 && usuarios.Count > 0)
         {
-            if (comercios.Count == 0 || usuarios.Count == 0) break;
-
-            long transCodigo;
-            do
+            for (int i = 0; i < request.CantidadTransacciones; i++)
             {
-                transCodigo = long.Parse(DateTime.UtcNow.Ticks.ToString().Substring(10)) + _rng.Next(1, 999999);
-            } while (await _db.Transacciones.AnyAsync(t => t.TransCodigo == transCodigo) || transacciones.Any(t => t.TransCodigo == transCodigo));
+                var transCodigo = GenerarUnico(transCodigosUsados, () => _rng.NextInt64(100_000_000, 999_999_999));
 
-            transacciones.Add(new Transaccion
-            {
-                TransCodigo = transCodigo,
-                TransMedioPago = MediosPago[_rng.Next(MediosPago.Length)],
-                TransEstado = Estados[_rng.Next(Estados.Length)],
-                TransTotal = Math.Round((decimal)(_rng.NextDouble() * 490000 + 10000), 2),
-                TransFecha = DateTime.UtcNow.AddDays(-_rng.Next(0, 60)),
-                TransConcepto = "Pago de prueba #" + _rng.Next(1000, 9999),
-                ComercioId = comercios[_rng.Next(comercios.Count)].Id,
-                UsuarioPagadorId = usuarios[_rng.Next(usuarios.Count)].Id
-            });
+                transacciones.Add(new Transaccion
+                {
+                    TransCodigo = transCodigo,
+                    TransMedioPago = MediosPago[_rng.Next(MediosPago.Length)],
+                    TransEstado = Estados[_rng.Next(Estados.Length)],
+                    TransTotal = Math.Round((decimal)(_rng.NextDouble() * 490_000 + 10_000), 2),
+                    TransFecha = DateTime.UtcNow.AddDays(-_rng.Next(0, 60)),
+                    TransConcepto = "Pago de prueba #" + _rng.Next(1000, 9999),
+                    ComercioId = comercios[_rng.Next(comercios.Count)].Id,
+                    UsuarioPagadorId = usuarios[_rng.Next(usuarios.Count)].Id
+                });
+            }
         }
         _db.Transacciones.AddRange(transacciones);
         await _db.SaveChangesAsync();
@@ -91,13 +95,20 @@ public class DatosPruebaService : IDatosPruebaService
         };
     }
 
-    private async Task<string> GenerarCodigoUnicoAsync(Func<string, Task<bool>> existe)
+    // HashSet.Add devuelve false si el valor ya existia (y no lo vuelve a agregar).
+    private static string GenerarUnico(HashSet<string> usados, Func<string> generador)
     {
-        string codigo;
-        do
-        {
-            codigo = _rng.Next(100000, 999999).ToString();
-        } while (await existe(codigo));
-        return codigo;
+        string candidato;
+        do { candidato = generador(); }
+        while (!usados.Add(candidato));
+        return candidato;
+    }
+
+    private static long GenerarUnico(HashSet<long> usados, Func<long> generador)
+    {
+        long candidato;
+        do { candidato = generador(); }
+        while (!usados.Add(candidato));
+        return candidato;
     }
 }

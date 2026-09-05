@@ -75,6 +75,9 @@ public class TransaccionService : ITransaccionService
 
     public async Task<TransaccionDto> CrearAsync(int usuarioPagadorId, CrearTransaccionRequest request)
     {
+        if (!TransMedioPago.Nombres.ContainsKey(request.TransMedioPago))
+            throw new InvalidOperationException("El medio de pago no es válido.");       
+
         var yaExiste = await _db.Transacciones.AnyAsync(t => t.TransCodigo == request.TransCodigo);
         if (yaExiste)
             throw new InvalidOperationException("Ya existe una transacción con ese código.");
@@ -105,6 +108,12 @@ public class TransaccionService : ITransaccionService
 
     public async Task<TransaccionDto> ActualizarAsync(int comercioId, int transaccionId, ActualizarTransaccionRequest request)
     {
+        if (!TransMedioPago.Nombres.ContainsKey(request.TransMedioPago))
+            throw new InvalidOperationException("El medio de pago no es válido.");
+
+        if (!TransEstado.Nombres.ContainsKey(request.TransEstado))
+            throw new InvalidOperationException("El estado no es válido.");
+            
         var transaccion = await _db.Transacciones
             .Include(t => t.Comercio)
             .Include(t => t.UsuarioPagador)
